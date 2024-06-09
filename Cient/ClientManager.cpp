@@ -23,6 +23,7 @@ void ClientManager::sendMessage(QString message, QString receiver)
     if(message.trimmed().length() > 0){
         _socket->write(_protocol.textMessage(message, receiver));
     }
+    emit saveMessageSignal("Me", receiver, message);
 }
 
 void ClientManager::sendName(QString name)
@@ -64,6 +65,7 @@ void ClientManager::readyRead()
     switch (_protocol.type()){
     case ChatProtocol::Text:
         emit textMessageRecieved(_protocol.message());
+        emit saveMessageSignal("sender", _protocol.receiver(), _protocol.message());
         break;
     case ChatProtocol::SetName:
         emit nameChanged(_protocol.name());
@@ -96,7 +98,6 @@ void ClientManager::readyRead()
     case ChatProtocol::ClientName:
         emit clientNameChanged(_protocol.prevName(), _protocol.clientName());
         break;
-
     default:
         break;
     }

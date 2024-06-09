@@ -7,14 +7,18 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // Проверка доступных драйверов базы данных
+    qDebug() << "Available SQL drivers:" << QSqlDatabase::drivers();
     //ui->centralwidget->setEnabled(false);
     ui->lnClientName->setEnabled(true);
     setupClient();
+    setupDatabase();
+    //clearMessagesTable();
+    //loadMessages();
+
     ui->stackedWidget->insertWidget(0, ui->pgLogin);
     ui->stackedWidget->insertWidget(1, ui->pgMessanger);
-
     ui->stackedWidget->setCurrentIndex(0);
-
     ui->menubar->hide();
 }
 
@@ -50,6 +54,85 @@ void MainWindow::setupClient()
     connect(_client, &ClientManager::clientDisconnected, this, &MainWindow::onClientDisconnected);
     connect(_client, &ClientManager::clientNameChanged, this, &MainWindow::onClientNameChanged);
 
+    connect(_client, &ClientManager::saveMessageSignal, this, &MainWindow::saveMessage);
+}
+
+void MainWindow::setupDatabase() {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("chat.db");
+
+    if (!db.open()) {
+        qDebug() << "Error: connection with database fail";
+    } else {
+        qDebug() << "Database: connection ok";
+    }
+
+    QSqlQuery query;
+    QString createTable = "CREATE TABLE IF NOT EXISTS messages ("
+                          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                          "sender TEXT, "
+                          "receiver TEXT, "
+                          "message TEXT, "
+                          "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)";
+    if (!query.exec(createTable)) {
+        qDebug() << "Couldn't create the table 'messages': one might already exist.";
+    }
+}
+
+void MainWindow::saveMessage(QString sender, QString receiver, QString message) {
+    QSqlQuery query;
+    query.prepare("INSERT INTO messages (sender, receiver, message) VALUES (:sender, :receiver, :message)");
+    query.bindValue(":sender", sender);
+    query.bindValue(":receiver", receiver);
+    query.bindValue(":message", message);
+
+    if (!query.exec()) {
+        qDebug() << "Error inserting into table:\n" << query.lastError();
+    } else {
+        qDebug() << "Message inserted!";
+    }
+}
+
+void MainWindow::loadMessages() {
+    QSqlQuery query("SELECT sender, receiver, message, timestamp FROM messages ORDER BY timestamp");
+
+    while (query.next()) {
+        QString sender = query.value(0).toString();
+        QString receiver = query.value(1).toString();
+        QString message = query.value(2).toString();
+        QDateTime timestamp = query.value(3).toDateTime();
+
+        if (receiver == ui->lnClientName->text() || receiver == "All") {
+            auto chatWidget = new ChatItemWidget(this);
+            chatWidget->setMessage(message, false);  // false, так как это не сообщение текущего пользователя
+            auto listItemWidget = new QListWidgetItem();
+            listItemWidget->setSizeHint(QSize(0,90));
+            ui->lstMessages->addItem(listItemWidget);
+            listItemWidget->setBackground(QColor(100, 100, 100));
+            ui->lstMessages->setItemWidget(listItemWidget, chatWidget);
+        }
+        else{
+            auto chatWidget = new ChatItemWidget(this);
+            chatWidget->setMessage(message, true);  // false, так как это не сообщение текущего пользователя
+            auto listItemWidget = new QListWidgetItem();
+            listItemWidget->setSizeHint(QSize(0,90));
+            ui->lstMessages->addItem(listItemWidget);
+            listItemWidget->setBackground(QColor(100, 100, 100));
+            ui->lstMessages->setItemWidget(listItemWidget, chatWidget);
+        }
+
+        qDebug() << timestamp.toString("yyyy-MM-dd hh:mm:ss") << sender << receiver << message;
+    }
+}
+
+void MainWindow::clearMessagesTable()
+{
+    QSqlQuery query;
+    if (!query.exec("DELETE FROM messages")) {
+        qDebug() << "Error clearing messages table:" << query.lastError().text();
+    } else {
+        qDebug() << "Messages table cleared successfully.";
+    }
 }
 
 void MainWindow::on_actionConnect_triggered()
@@ -118,6 +201,9 @@ void MainWindow::on_lnMessage_returnPressed()
 void MainWindow::on_lnClientName_editingFinished()
 {
     auto name = ui->lnClientName->text().trimmed();
+    if(name ==""){
+        return;
+    }
     _client->sendName(name);
 }
 
@@ -216,9 +302,13 @@ void MainWindow::on_cmbDestination_currentIndexChanged(int index)
 
 void MainWindow::on_btnLogin_clicked()
 {
-    _client->connectToServer();
     auto name = ui->lnClientName->text().trimmed();
+    if(name ==""){
+        return;
+    }
+    _client->connectToServer();
     _client->sendName(name);
+    loadMessages();
     ui->stackedWidget->setCurrentIndex(1);
 }
 
@@ -234,6 +324,12 @@ void MainWindow::on_btnExit_clicked()
 
 void MainWindow::on_lnClientName_returnPressed()
 {
+    auto name = ui->lnClientName->text().trimmed();
+    if(name ==""){
+        return;
+    }
     ui->stackedWidget->setCurrentIndex(1);
+    loadMessages();
 }
+
 

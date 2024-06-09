@@ -102,6 +102,7 @@ void ChatProtocol::loadData(QByteArray data)
     case ConnectionACK:
         in >> _myName >> _clientsName;
         break;
+
     default:
         break;
     }

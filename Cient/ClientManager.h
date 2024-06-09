@@ -31,11 +31,12 @@ signals:
     void statusChanged(ChatProtocol::Status status);
     void rejectReceivingFile();
     void initReceivingFile(QString clientName, QString fileName, qint64 fileSize);
-
     void connectionACK(QString myName, QStringList clientsName);
     void newClientConnectedToServer(QString clientName);
     void clientNameChanged(QString prevName, QString clientName);
     void clientDisconnected(QString clientName);
+
+    void saveMessageSignal(QString sender, QString receiver, QString message);
 
 private slots:
     void readyRead();
