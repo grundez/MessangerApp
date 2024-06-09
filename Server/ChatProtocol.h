@@ -30,7 +30,7 @@ public:
         Busy
     };
 
-    QByteArray textMessage(QString message, QString receiver);
+    QByteArray textMessage(QString sender, QString message, QString receiver);
     QByteArray isTypingMessage();
     QByteArray setNameMessage(QString name);
     QByteArray setStatusMessage(Status status);
@@ -62,6 +62,8 @@ public:
 
     QString receiver() const;
 
+    QString sender() const;
+
 private:
     QByteArray getData(MessageType type, QString data);
     MessageType _type;
@@ -72,6 +74,7 @@ private:
     qint64 _fileSize;
     QByteArray _fileData;
     QString _receiver;
+    QString _sender;
 
 };
 

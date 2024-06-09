@@ -29,8 +29,9 @@ signals:
     void connected();
     void disconnected();
     //void dataRecieved(QByteArray data);
-    void textMessageReceived(QString message, QString receiver);
+    void textMessageReceived(QString sender, QString message, QString receiver);
     void isTyping();
+    void serverDisconnected();
     void nameChanged(QString prevName, QString name);
     void statusChanged(ChatProtocol::Status status);
     void rejectReceivingFile();

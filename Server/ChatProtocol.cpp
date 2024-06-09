@@ -8,12 +8,12 @@ ChatProtocol::ChatProtocol()
 
 }
 
-QByteArray ChatProtocol::textMessage(QString message, QString receiver)
+QByteArray ChatProtocol::textMessage(QString sender, QString message, QString receiver)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_6_0);
-    out << Text << receiver << message;
+    out << Text << sender << receiver << message;
     return ba;
 }
 
@@ -105,7 +105,7 @@ void ChatProtocol::loadData(QByteArray data)
     in >> _type;
     switch(_type){
     case Text:
-        in >> _receiver >> _message;
+        in >> _sender >>_receiver >> _message;
         break;
     case SetName:
         in >> _name;
@@ -131,6 +131,11 @@ QByteArray ChatProtocol::getData(MessageType type, QString data)
     out.setVersion(QDataStream::Qt_6_0);
     out << type  << data;
     return ba;
+}
+
+QString ChatProtocol::sender() const
+{
+    return _sender;
 }
 
 QString ChatProtocol::receiver() const

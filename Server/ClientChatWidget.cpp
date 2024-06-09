@@ -46,13 +46,16 @@ void ClientChatWidget::clientDisconnected()
     ui->wdgSend->setEnabled(false);
 }
 
-void ClientChatWidget::textMessageReceived(QString message, QString receiver)
+void ClientChatWidget::textMessageReceived(QString sender, QString message, QString receiver)
 {
-    if(receiver == "Server" || receiver == "All"){
-        ui->lstMessages->addItem(message);
+    if(receiver == "All"){
+        if(receiver != "Server")
+        {
+            ui->lstMessages->addItem(message);
+        }
     }
     if(receiver != "Server"){
-        ui->lstMessages->addItem(message + ", receiver: " + receiver);
+        ui->lstMessages->addItem("sender: " + sender + " - " + message + ", receiver: " + receiver);
         emit textForOtherClients(message, receiver, _client->name());
     }
 }

@@ -26,7 +26,6 @@ public slots:
 
 private slots:
     void on_tbChats_tabCloseRequested(int index);
-
     void on_btnDisconnectAll_clicked();
 
 private: // поля
