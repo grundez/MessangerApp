@@ -18,12 +18,12 @@ void ClientManager::disconnectFromServer()
     _socket->disconnectFromHost();
 }
 
-void ClientManager::sendMessage(QString message, QString receiver)
+void ClientManager::sendMessage(QString sender, QString message, QString receiver)
 {
     if(message.trimmed().length() > 0){
-        _socket->write(_protocol.textMessage(message, receiver));
+        _socket->write(_protocol.textMessage(sender, message, receiver));
     }
-    emit saveMessageSignal("Me", receiver, message);
+    emit saveMessageSignal(sender, receiver, message);
 }
 
 void ClientManager::sendName(QString name)
@@ -65,7 +65,7 @@ void ClientManager::readyRead()
     switch (_protocol.type()){
     case ChatProtocol::Text:
         emit textMessageRecieved(_protocol.message());
-        emit saveMessageSignal("sender", _protocol.receiver(), _protocol.message());
+        emit saveMessageSignal(_protocol.name(), _protocol.receiver(), _protocol.message());
         break;
     case ChatProtocol::SetName:
         emit nameChanged(_protocol.name());

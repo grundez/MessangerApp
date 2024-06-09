@@ -12,7 +12,7 @@ public:
     explicit ClientManager(QHostAddress ip = QHostAddress::LocalHost, ushort port = 4500, QObject *parent = nullptr);
     void connectToServer();
     void disconnectFromServer();
-    void sendMessage(QString message, QString receiver);
+    void sendMessage(QString sender, QString message, QString receiver);
     void sendName(QString name);
     void sendStatus(ChatProtocol::Status status);
     void sendIsTyping();

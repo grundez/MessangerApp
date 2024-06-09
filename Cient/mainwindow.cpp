@@ -27,7 +27,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::setupClient()
 {
     _client = new ClientManager();
@@ -111,7 +110,7 @@ void MainWindow::loadMessages() {
             listItemWidget->setBackground(QColor(100, 100, 100));
             ui->lstMessages->setItemWidget(listItemWidget, chatWidget);
         }
-        else{
+        if(sender == ui->lnClientName->text()){
             auto chatWidget = new ChatItemWidget(this);
             chatWidget->setMessage(message, true);  // false, так как это не сообщение текущего пользователя
             auto listItemWidget = new QListWidgetItem();
@@ -165,7 +164,7 @@ void MainWindow::on_btnSend_clicked()
         return;
     }
     auto message = ui->lnClientName->text() + "\n"+ ui->lnMessage->text().trimmed();
-    _client->sendMessage(message, ui->cmbDestination->currentText());
+    _client->sendMessage(ui->lnClientName->text(), message, ui->cmbDestination->currentText());
     //ui->lstMessages->addItem(message);
 
     ui->lnMessage->setText("");
@@ -185,7 +184,7 @@ void MainWindow::on_lnMessage_returnPressed()
     }
 
     auto message = ui->lnClientName->text() + ":\n" +ui->lnMessage->text().trimmed();
-    _client->sendMessage(message, ui->cmbDestination->currentText());
+    _client->sendMessage(ui->lnClientName->text(), message, ui->cmbDestination->currentText());
     //ui->lstMessages->addItem(message);
 
     ui->lnMessage->setText("");
@@ -316,7 +315,8 @@ void MainWindow::on_btnLogin_clicked()
 void MainWindow::on_btnExit_clicked()
 {
     _client->disconnectFromServer();
-    _client->deleteLater();
+    //_client->deleteLater();
+    ui->lstMessages->clear();
     ui->stackedWidget->setCurrentIndex(0);
     ui->lnClientName->clear();
 }

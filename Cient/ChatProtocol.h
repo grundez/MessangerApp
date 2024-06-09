@@ -31,7 +31,7 @@ public:
         Busy
     };
 
-    QByteArray textMessage(QString message, QString receiver);
+    QByteArray textMessage(QString sender, QString message, QString receiver);
     QByteArray isTypingMessage();
     QByteArray setNameMessage(QString name);
     QByteArray setStatusMessage(Status status);
@@ -66,6 +66,8 @@ public:
 
     QString myName() const;
 
+    QString sender() const;
+
 private:
     QByteArray getData(MessageType type, QString data);
     MessageType _type;
@@ -80,6 +82,7 @@ private:
     QString _prevName;
     QStringList _clientsName;
     QString _myName;
+    QString _sender;
 
 };
 
